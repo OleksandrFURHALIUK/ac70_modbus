@@ -5,7 +5,7 @@ from loguru import logger
 
 from fc_driver import start_fc, stop_fc, read_fc_state, set_frequency, set_speed, motor_init, get_motor_data, \
     set_start_duration, set_stop_duration, get_start_duration, get_stop_duration, reset_to_default, debug_fc, \
-    switch_control_side_to_lcp, switch_control_side_to_bus, get_speed
+    switch_control_side_to_lcp, switch_control_side_to_bus, get_speed, alarm_reset, read_alarm_code
 
 commands = ['start', 'stop',
            'read_state',
