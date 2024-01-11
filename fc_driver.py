@@ -28,7 +28,7 @@ def start_fc(ip_addr: str):
     try:
         if success:
             # read = client.write_register(address=8193, value=18,  slave=1)
-            resp = client.write_register(address=0x3001, value=2, slave=1)
+            resp = client.write_register(address=0x3001, value=1, slave=1)
             # read = client.read_holding_registers(address=0x3001, count=1, unit=1, slave=1)
             print('ok')
         else:
@@ -51,12 +51,17 @@ def stop_fc(ip_addr: str):
         logger.error(f'{str(e)}')
 
 
-def set_frequency(ip_addr: str, frequency):
+def set_freq(ip_addr: str, freq):
     client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
     success = client.connect()
     try:
         if success:
-            resp = client.write_register(address=0x3000, value=int(float(frequency) * 100), slave=1)
+            # check freq range
+            freq= int(float(freq) * 100)
+            if not 0 <= freq <= 60000:
+                print(f'value {freq/100} out of range 0-600')
+                return
+            resp = client.write_register(address=0x3000, value=freq, slave=1)
             # read = client.read_holding_registers(address=0x3002, count=1, unit=1, slave=1)
             print('ok')
         else:
@@ -113,8 +118,8 @@ def motor_init(ip_addr: str, voltage, current, power, frequency, speed):
     try:
         if success:
             resp = client.write_register(address=0x337, value=int(voltage), slave=1)
-            resp = client.write_register(address=0x338, value=int(float(current) * 100), slave=1)
-            resp = client.write_register(address=0x334, value=int(float(power) * 100), slave=1)
+            resp = client.write_register(address=0x338, value=int(float(current) * 10), slave=1)
+            resp = client.write_register(address=0x334, value=int(float(power) * 10), slave=1)
             resp = client.write_register(address=0x335, value=int(float(frequency) * 100), slave=1)
             resp = client.write_register(address=0x336, value=int(speed), slave=1)
             print('ok')
@@ -135,8 +140,9 @@ def get_motor_data(ip_addr: str):
             frequency = client.read_holding_registers(address=0x335, count=1, unit=1, slave=1)
             speed = client.read_holding_registers(address=0x336, count=1, unit=1, slave=1)
             print(
-                f'voltage: {voltage.registers[0]} V\ncurrent: {current.registers[0] / 100} A\npower: {power.registers[0] / 100} kW\n'
+                f'voltage: {voltage.registers[0]} V\ncurrent: {current.registers[0] / 10} A\npower: {power.registers[0] / 10} kW\n'
                 f'frequency: {frequency.registers[0] / 100} Hz\nspeed: {speed.registers[0]} rpm')
+            print('ok')
         else:
             print('connection to FC failed')
     except Exception as e:
@@ -148,7 +154,7 @@ def set_start_duration(ip_addr: str, duration):
     success = client.connect()
     try:
         if success:
-            resp = client.write_register(address=0x10d, value=int(float(duration) * 100), slave=1)
+            resp = client.write_register(address=0x10d, value=int(float(duration) * 10), slave=1)
             print('ok')
         else:
             print('connection to FC failed')
@@ -163,7 +169,7 @@ def get_start_duration(ip_addr: str):
         if success:
             resp = client.read_holding_registers(address=0x10d, count=1, unit=1, slave=1)
             stop_duration = resp.registers[0]
-            print(f'E-13 Deceleration time 1: {stop_duration / 100}')
+            print(f'E-13 Deceleration time 1: {stop_duration / 10}')
             print('ok')
         else:
             print('connection to FC failed')
@@ -176,7 +182,7 @@ def set_stop_duration(ip_addr: str, duration: str):
     success = client.connect()
     try:
         if success:
-            resp = client.write_register(address=0x10e, value=int(float(duration) * 100), slave=1)
+            resp = client.write_register(address=0x10e, value=int(float(duration) * 10), slave=1)
             print('ok')
         else:
             print('connection to FC failed')
@@ -191,7 +197,7 @@ def get_stop_duration(ip_addr: str):
         if success:
             resp = client.read_holding_registers(address=0x10e, count=1, unit=1, slave=1)
             stop_duration = resp.registers[0]
-            print(f'E-14 Deceleration time 1: {stop_duration / 100}')
+            print(f'E-14 Deceleration time 1: {stop_duration / 10}')
             print('ok')
         else:
             print('connection to FC failed')
@@ -278,8 +284,8 @@ def switch_control_side_to_bus(ip_addr):
             print('setting E02 to 6')
 
             # write parameter E05
-            resp = client.read_holding_registers(address=0x105, value=1, slave=1)
-            print('setting E05 to 1')
+            resp = client.read_holding_registers(address=0x105, value=0x0, slave=1)
+            print('setting E05 to 0')
             print('ok')
         else:
             print('connection to FC failed')
@@ -299,7 +305,7 @@ def switch_control_side_to_lcp(ip_addr):
             resp = client.write_register(address=0x102, value=1, slave=1)
             print('setting E02 to 1')
             # write parameter E05
-            resp = client.read_holding_registers(address=0x105, value=0, slave=1)
+            resp = client.read_holding_registers(address=0x105, value=0x0, slave=1)
             print('setting E05 to 0')
             print('ok')
         else:

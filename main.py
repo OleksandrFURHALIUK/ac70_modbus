@@ -3,13 +3,13 @@ import sys
 
 from loguru import logger
 
-from fc_driver import start_fc, stop_fc, read_fc_state, set_frequency, set_speed, motor_init, get_motor_data, \
+from fc_driver import start_fc, stop_fc, read_fc_state, set_freq, set_speed, motor_init, get_motor_data, \
     set_start_duration, set_stop_duration, get_start_duration, get_stop_duration, reset_to_default, debug_fc, \
     switch_control_side_to_lcp, switch_control_side_to_bus, get_speed, alarm_reset, read_alarm_code
 
 commands = ['start', 'stop',
            'read_state',
-           'set_frequency',
+           'set_freq',
            'set_rpm', 'get_rpm',
            'motor_init', 'get_motor_data',
            'set_start_duration', 'get_start_duration',
@@ -46,13 +46,13 @@ def main():
         ip_addr = args.IP[0]
         read_fc_state(ip_addr=ip_addr)
 
-    elif 'set_frequency' in args.CMD:
+    elif 'set_freq' in args.CMD:
         ip_addr = args.IP[0]
         if not args.CMD_ARGS:
             print('missing frequency value')
             return
-        frequency = args.CMD_ARGS[0]
-        set_frequency(ip_addr=ip_addr, frequency=frequency)
+        freq = args.CMD_ARGS[0]
+        set_freq(ip_addr=ip_addr, freq=freq)
 
     elif 'set_rpm' in args.CMD:
         ip_addr = args.IP[0]
