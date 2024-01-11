@@ -5,19 +5,18 @@ from loguru import logger
 
 from fc_driver import start_fc, stop_fc, read_fc_state, set_frequency, set_speed, motor_init, get_motor_data, \
     set_start_duration, set_stop_duration, get_start_duration, get_stop_duration, reset_to_default, debug_fc, \
-    switch_control_side_to_lcp, switch_control_side_to_bus
+    switch_control_side_to_lcp, switch_control_side_to_bus, get_speed
 
-choices = ['start', 'stop',
+commands = ['start', 'stop',
            'read_state',
-           'set_frequency', 'set_rpm',
+           'set_frequency',
+           'set_rpm', 'get_rpm',
            'motor_init', 'get_motor_data',
            'set_start_duration', 'get_start_duration',
            'set_stop_duration', 'get_stop_duration',
            'switch_control_side_to_lcp', 'switch_control_side_to_bus',
-           'reset_to_default'
+           'reset_to_default', 'alarm_reset', 'read_alarm_code'
            ]
-
-epilog = ''
 
 
 def main():
@@ -28,8 +27,8 @@ def main():
                                      )
     parser.add_argument("IP", action='extend', nargs=1, type=str, metavar='IP',
                         help='IP address ETH->RS485 converter. For example 192.168.3.198')
-    parser.add_argument('CMD', action='extend', nargs=1, type=str, metavar='CMD', choices=choices,
-                        help=f"Command from available list: {choices}")
+    parser.add_argument('CMD', action='extend', nargs=1, type=str, metavar='CMD', choices=commands,
+                        help=f"Command from available list: {commands}")
     parser.add_argument('CMD_ARGS', action='extend', nargs='*', type=str, metavar='CMD_ARGS',
                         help='Command specific arguments')
 
@@ -62,6 +61,9 @@ def main():
             return
         speed = args.CMD_ARGS[0]
         set_speed(ip_addr=ip_addr, speed=speed)
+    elif 'get_rpm' in args.CMD:
+        ip_addr = args.IP[0]
+        get_speed(ip_addr=ip_addr)
 
     elif 'motor_init' in args.CMD:
         if not args.CMD_ARGS:
@@ -102,12 +104,19 @@ def main():
     elif 'reset_to_default' in args.CMD:
         ip_addr = args.IP[0]
         reset_to_default(ip_addr=ip_addr)
+    elif 'alarm_reset' in args.CMD:
+        ip_addr = args.IP[0]
+        alarm_reset(ip_addr=ip_addr)
+    elif 'read_alarm_code' in args.CMD:
+        ip_addr = args.IP[0]
+        read_alarm_code(ip_addr=ip_addr)
     elif 'switch_control_side_to_lcp' in args.CMD:
         ip_addr = args.IP[0]
         switch_control_side_to_lcp(ip_addr=ip_addr)
     elif 'switch_control_side_to_bus' in args.CMD:
         ip_addr = args.IP[0]
         switch_control_side_to_bus(ip_addr=ip_addr)
+
 
     elif 'debug' in args.CMD:
         ip_addr = args.IP[0]

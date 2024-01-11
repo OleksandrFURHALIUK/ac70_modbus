@@ -8,7 +8,6 @@ from pymodbus.transaction import ModbusRtuFramer
 
 
 def debug_fc(ip_addr: str):
-    logger.info(f'start fc cmd')
     client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
     success = client.connect()
     try:
@@ -39,7 +38,6 @@ def start_fc(ip_addr: str):
 
 
 def stop_fc(ip_addr: str):
-    logger.info(f'stop fc cmd')
     client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
     success = client.connect()
     try:
@@ -54,7 +52,6 @@ def stop_fc(ip_addr: str):
 
 
 def set_frequency(ip_addr: str, frequency):
-    logger.info('setting frequency')
     client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
     success = client.connect()
     try:
@@ -75,10 +72,10 @@ def set_speed(ip_addr: str, speed):
     try:
         if success:
             # read factory motor speed
-            resp = client.write_register(address=0x336, value=int(speed), slave=1)
+            resp = client.read_holding_registers(address=0x336, count=1, unit=1, slave=1)
             factory_motor_speed = int(resp.registers[0])
             # read factory motor frequency
-            resp = client.write_register(address=0x335, value=int(speed), slave=1)
+            resp = client.read_holding_registers(address=0x335, count=1, unit=1, slave=1)
             factory_motor_frequency = int(resp.registers[0])/100
             # calculate target frequency
             target_frequency = (factory_motor_frequency/factory_motor_speed)*speed
@@ -87,6 +84,23 @@ def set_speed(ip_addr: str, speed):
 
             # resp = client.read_holding_registers(address=0x3002, count=1, unit=1, slave=1)
             print('ok')
+        else:
+            print('connection to FC failed')
+    except Exception as e:
+        logger.error(f'{str(e)}')
+
+
+def get_speed(ip_addr:str):
+    client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
+    success = client.connect()
+    try:
+        if success:
+            # read actual motor speed
+            resp = client.read_holding_registers(address=0xc06, count=1, unit=1, slave=1)
+            actual_motor_speed = int(resp.registers[0])
+            print(actual_motor_speed)
+            print('ok')
+
         else:
             print('connection to FC failed')
     except Exception as e:
@@ -123,8 +137,6 @@ def get_motor_data(ip_addr: str):
             print(
                 f'voltage: {voltage.registers[0]} V\ncurrent: {current.registers[0] / 100} A\npower: {power.registers[0] / 100} kW\n'
                 f'frequency: {frequency.registers[0] / 100} Hz\nspeed: {speed.registers[0]} rpm')
-
-            # todo add set_speed and get current speed
         else:
             print('connection to FC failed')
     except Exception as e:
@@ -132,7 +144,6 @@ def get_motor_data(ip_addr: str):
 
 
 def set_start_duration(ip_addr: str, duration):
-    logger.info('set start duration')
     client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
     success = client.connect()
     try:
@@ -217,6 +228,35 @@ def reset_to_default(ip_addr: str):
 
             # write parameter E11
             resp = client.write_register(address=0x10b, value=0, slave=1)
+            print('ok')
+        else:
+            print('connection to FC failed')
+    except Exception as e:
+        logger.error(f'{str(e)}')
+
+
+def alarm_reset(ip_addr: str):
+    client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
+    success = client.connect()
+    try:
+        if success:
+            # write 3001H
+            resp = client.write_register(address=0x3001, value=0x7, slave=1)
+            print('ok')
+        else:
+            print('connection to FC failed')
+    except Exception as e:
+        logger.error(f'{str(e)}')
+
+
+def read_alarm_code(ip_addr: str):
+    client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
+    success = client.connect()
+    try:
+        if success:
+            # write 3001H
+            resp = client.read_holding_registers(address=0x3003, count=1, unit=1, slave=1)
+            print(resp.registers[0])
             print('ok')
         else:
             print('connection to FC failed')
