@@ -19,23 +19,75 @@ commands = ['start', 'stop',
             'debug'
            ]
 epilog = """
-This program is designed to control the frequency converter Veichi AC70 via rs485 network 
-with Ethernet -> Rs485 converter VTR-E/485.\n
-
+    This program is designed to control the frequency converter Veichi AC70 via rs485 network 
+with Ethernet -> Rs485 converter VTR-E/485 with default port 9761\n 
 Basic cmd look like: ac70 192.168.3.198 read_state
 
+Possible cmd are:
+        set_freq 12.3 - set frequency, by writing value in to register with address 3000H.
+                        during writing check input value in range 0-600 Hz 
+                        
+        get_freq - read register value with address C02H
+        
+        set_rpm 1550 - set target speed of drive as 1550 rpm. This use set_freq command to set target 
+                    speed of drive. Target frequency calculating by next expression:
+                    target_frequency = (factory_motor_frequency / factory_motor_speed) * speed
+                    Input speed checked to be in range 0-rpm_max
+        
+        get_rpm - read current motor speed in rpm by reading register with address C06H
+        
+        get_rpm_max - calculated max motor speed by next expression max_speed = (600*factory_motor_speed)/factory_motor_frequency
+         
+        set_motor_data 220 10.3 2.2 50 2800 - set motor data:   Voltage 220 Volts, H55, 
+                                                                Current 10.3 Ampere, H56, 
+                                                                Power 2.2 kW, H52,
+                                                                Frequency 50 Hz, H53,
+                                                                Motor speed 2800 rpm, H54 
+                                                            
+        get_motor_data - return motor data reading registers H55, H56, H52, H53, H54
+        
+        set_start_duration 3.0 - set acceleration time 3 seconds by writing register with address 10DH
+        
+        get_start_duration - read register with address 10DH
+        
+        set_stop_duration 3.0 - set deceleration time 3 seconds by writing register with address 10EH
+        
+        get_stop_duration - read register with address 10EH
+        
+        goto_hands_mode - switch control side to local control panel. Write registers:  0 -> 101H
+                                                                                        1 -> 102H
+                                                                                        0 -> 105H
+        goto_rs485_mode - switch control side to rs485 network. Write registers:    2 -> 101H
+                                                                                    6 -> 102H
+                                                                                    0 -> 105H
+        get_state - read register with address 3002H. Represent as: running: work or stop
+                                                                    acceleration: acc_on or acc_off 
+                                                                    deceleration: dec_on or dec_off
+                                                                    direction: fwd or rev
+                                                                    error: fault or normal 
+        alarm_reset - write value 0007H in to register 3001H
+        
+        get_alarm_code - read register with address 3003H. See fault code table.
+        
+        reset_to_default - write to parameter   E64 = 1
+                                                E09 = 600
+                                                E10 = 600
+                                                E11 = 0
+           
 """
+
 
 def main():
     parser = argparse.ArgumentParser(prog='ac70',
                                      description='AC70 frequency converter tool',
                                      epilog=epilog,
-                                     usage='ac70 IP CMD [-CMD_ARGS]'
+                                     usage='ac70 IP CMD [-CMD_ARGS]',
+                                     formatter_class=argparse.RawTextHelpFormatter,
                                      )
     parser.add_argument("IP", action='extend', nargs=1, type=str, metavar='IP',
                         help='IP address ETH->RS485 converter. For example 192.168.3.198')
     parser.add_argument('CMD', action='extend', nargs=1, type=str, metavar='CMD', choices=commands,
-                        help=f"Command from available list: {commands}")
+                        help=f"Command: {commands}")
     parser.add_argument('CMD_ARGS', action='extend', nargs='*', type=str, metavar='CMD_ARGS',
                         help='Command specific arguments')
 

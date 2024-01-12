@@ -258,7 +258,32 @@ def get_state(ip_addr: str):
         resp = client.read_holding_registers(address=0x3002, count=1, unit=1, slave=1)
         value = resp.registers[0]
         print('ok')
-        print(f'0b{value:08b}')
+        # print(f'0b{value:08b}')
+
+        if check_bit(value, 0):
+            print('work')
+        else:
+            print('stop')
+
+        if check_bit(value, 1):
+            print('acc_on')
+        else:
+            print('acc_off')
+
+        if check_bit(value, 2):
+            print('dec_on')
+        else:
+            print('dec_off')
+
+        if check_bit(value, 3):
+            print('rev')
+        else:
+            print('fwd')
+
+        if check_bit(value, 4):
+            print('fault')
+        else:
+            print('normal')
     else:
         print('connection to FC failed')
 
@@ -270,6 +295,8 @@ def reset_to_default(ip_addr: str):
         if success:
             # write parameter E64
             resp = client.write_register(address=0x140, value=1, slave=1)
+
+            time.sleep(3)
 
             # write parameter E09
             resp = client.write_register(address=0x109, value=60000, slave=1)
@@ -323,15 +350,15 @@ def goto_rs485_mode(ip_addr):
         if success:
             # write parameter E01
             read = client.write_register(address=0x101, value=2, slave=1)
-            print('setting E01 to 2')
+            # print('setting E01 to 2')
 
             # write parameter E02
             resp = client.write_register(address=0x102, value=6, slave=1)
-            print('setting E02 to 6')
+            # print('setting E02 to 6')
 
             # write parameter E05
             resp = client.read_holding_registers(address=0x105, value=0x0, slave=1)
-            print('setting E05 to 0')
+            # print('setting E05 to 0')
             print('ok')
         else:
             print('connection to FC failed')
@@ -346,15 +373,19 @@ def goto_hands_mode(ip_addr):
         if success:
             # write parameter E01
             read = client.write_register(address=0x101, value=0, slave=1)
-            print('setting E01 to 0')
+            # print('setting E01 to 0')
             # write parameter E02
             resp = client.write_register(address=0x102, value=1, slave=1)
-            print('setting E02 to 1')
+            # print('setting E02 to 1')
             # write parameter E05
             resp = client.read_holding_registers(address=0x105, value=0x0, slave=1)
-            print('setting E05 to 0')
+            # print('setting E05 to 0')
             print('ok')
         else:
             print('connection to FC failed')
     except Exception as e:
         logger.error(f'{str(e)}')
+
+
+def check_bit(value, bit):
+    return value & 1 << bit != 0
