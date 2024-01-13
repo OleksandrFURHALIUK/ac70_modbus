@@ -5,9 +5,9 @@ from loguru import logger
 
 from fc_driver import start_fc, stop_fc, get_state, set_freq, set_speed, set_motor_data, get_motor_data, \
     set_start_duration, set_stop_duration, get_start_duration, get_stop_duration, reset_to_default, debug_fc, \
-    goto_hands_mode, goto_rs485_mode, get_rpm, alarm_reset, get_alarm_code, get_rpm_max, get_freq
+    goto_hands_mode, goto_rs485_mode, get_rpm, alarm_reset, get_alarm_code, get_rpm_max, get_freq, start_fc_rev
 
-commands = ['start', 'stop',
+commands = ['start', 'start_rev', 'stop',
            'get_state',
            'set_freq', 'get_freq',
            'set_rpm', 'get_rpm', 'get_rpm_max',
@@ -19,11 +19,19 @@ commands = ['start', 'stop',
             'debug'
            ]
 epilog = """
+usage: ac70 IP CMD [-CMD_ARGS]
+
     This program is designed to control the frequency converter Veichi AC70 via rs485 network 
 with Ethernet -> Rs485 converter VTR-E/485 with default port 9761\n 
 Basic cmd look like: ac70 192.168.3.198 read_state
 
 Possible cmd are:
+        start - start motor forward direction
+        
+        start_rev - start motor reverse direction
+        
+        stop - stop motor
+        
         set_freq 12.3 - set frequency, by writing value in to register with address 3000H.
                         during writing check input value in range 0-600 Hz 
                         
@@ -81,7 +89,7 @@ def main():
     parser = argparse.ArgumentParser(prog='ac70',
                                      description='AC70 frequency converter tool',
                                      epilog=epilog,
-                                     usage='ac70 IP CMD [-CMD_ARGS]',
+                                     usage=argparse.SUPPRESS,
                                      formatter_class=argparse.RawTextHelpFormatter,
                                      )
     parser.add_argument("IP", action='extend', nargs=1, type=str, metavar='IP',
@@ -91,11 +99,19 @@ def main():
     parser.add_argument('CMD_ARGS', action='extend', nargs='*', type=str, metavar='CMD_ARGS',
                         help='Command specific arguments')
 
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
     args = parser.parse_args()
 
     if 'start' in args.CMD:
         ip_addr = args.IP[0]
         start_fc(ip_addr=ip_addr)
+
+    if 'start_rev' in args.CMD:
+        ip_addr = args.IP[0]
+        start_fc_rev(ip_addr=ip_addr)
 
     elif 'stop' in args.CMD:
         ip_addr = args.IP[0]

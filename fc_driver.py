@@ -42,6 +42,22 @@ def start_fc(ip_addr: str):
         logger.error(f'{str(e)}')
 
 
+def start_fc_rev(ip_addr: str):
+    client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
+    success = client.connect()
+    try:
+        if success:
+            # read = client.write_register(address=8193, value=18,  slave=1)
+            resp = client.write_register(address=0x3001, value=2, slave=1)
+            # read = client.read_holding_registers(address=0x3001, count=1, unit=1, slave=1)
+            print('ok')
+        else:
+            print('connection to FC failed')
+    except Exception as e:
+        logger.error(f'{str(e)}')
+
+
+
 def stop_fc(ip_addr: str):
     client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
     success = client.connect()
