@@ -5,11 +5,13 @@ from loguru import logger
 
 from fc_driver import start_fc, stop_fc, get_state, set_freq, set_speed, set_motor_data, get_motor_data, \
     set_start_duration, set_stop_duration, get_start_duration, get_stop_duration, reset_to_default, debug_fc, \
-    goto_hands_mode, goto_rs485_mode, get_rpm, alarm_reset, get_alarm_code, get_rpm_max, get_freq, start_fc_rev
+    goto_hands_mode, goto_rs485_mode, get_rpm, alarm_reset, get_alarm_code, get_rpm_max, get_freq, start_fc_rev, \
+    set_freq_limit_high, get_freq_limit_high
 
 commands = ['start', 'start_rev', 'stop',
            'get_state',
            'set_freq', 'get_freq',
+           'set_freq_limit_high', 'get_freq_limit_high',
            'set_rpm', 'get_rpm', 'get_rpm_max',
            'set_motor_data', 'get_motor_data',
            'set_start_duration', 'get_start_duration',
@@ -34,7 +36,12 @@ Possible cmd are:
         
         set_freq 12.3 - set frequency, by writing value in to register with address 3000H.
                         during writing check input value in range 0-600 Hz 
-                        
+        
+        set_freq_limit_high - set the maximum allowable output frequency of inverter. 
+                              Write E9 and E10 parameters.
+                              
+        get_freq_limit_high - get the maximum allowable frequency of inverter. Read parameters E9 and E10               
+        
         get_freq - read register value with address C02H
         
         set_rpm 1550 - set target speed of drive as 1550 rpm. This use set_freq command to set target 
@@ -44,8 +51,10 @@ Possible cmd are:
         
         get_rpm - read current motor speed in rpm by reading register with address C06H
         
-        get_rpm_max - calculated max motor speed by next expression max_speed = (600*factory_motor_speed)/factory_motor_frequency
-         
+        get_rpm_max - calculated max motor speed by next expression:
+                        max_speed = (freq_limit_high*factory_motor_speed)/factory_motor_frequency
+                        where freq_limit_high is the value from parameter E9 and E10
+                         
         set_motor_data 220 10.3 2.2 50 2800 - set motor data:   Voltage 220 Volts, H55, 
                                                                 Current 10.3 Ampere, H56, 
                                                                 Power 2.2 kW, H52,
@@ -72,7 +81,7 @@ Possible cmd are:
                                                                     acceleration: acc_on or acc_off 
                                                                     deceleration: dec_on or dec_off
                                                                     direction: fwd or rev
-                                                                    error: fault or normal 
+                                                                    state: fault or normal 
         alarm_reset - write value 0007H in to register 3001H
         
         get_alarm_code - read register with address 3003H. See fault code table.
@@ -131,7 +140,16 @@ def main():
     elif 'get_freq' in args.CMD:
         ip_addr = args.IP[0]
         get_freq(ip_addr=ip_addr)
-
+    elif 'set_freq_limit_high' in args.CMD:
+        ip_addr = args.IP[0]
+        if not args.CMD_ARGS:
+            print('missing frequency value')
+            return
+        freq = args.CMD_ARGS[0]
+        set_freq_limit_high(ip_addr=ip_addr, freq=freq)
+    elif 'get_freq_limit_high' in args.CMD:
+        ip_addr = args.IP[0]
+        get_freq_limit_high(ip_addr=ip_addr)
     elif 'set_rpm' in args.CMD:
         ip_addr = args.IP[0]
         if not args.CMD_ARGS:

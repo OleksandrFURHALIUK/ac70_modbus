@@ -1,10 +1,14 @@
 # Readme
 ***
+This program is designed to control the frequency converter Veichi AC70 via rs485 network 
+with Ethernet -> Rs485 converter VTR-E/485 with default port 9761
+***
 ### Install
 Install requirements with command
 ```commandline
 pip install -r requirements.txt
 ```
+
 ---
 ### Build
 For build binary with pyinstaller use command

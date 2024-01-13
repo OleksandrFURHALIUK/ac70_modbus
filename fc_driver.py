@@ -107,6 +107,44 @@ def get_freq(ip_addr: str):
         logger.error(f'{str(e)}')
 
 
+def set_freq_limit_high(ip_addr: str, freq):
+    client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
+    success = client.connect()
+    try:
+        if success:
+            # check freq range
+            freq = int(float(freq) * 100)
+            if not 0 <= freq <= 60000:
+                print(f'value {freq / 100} out of range 0-600')
+                return
+            resp = client.write_register(address=0x109, value=freq, slave=1)
+            resp = client.write_register(address=0x10a, value=freq, slave=1)
+            # read = client.read_holding_registers(address=0x3002, count=1, unit=1, slave=1)
+            print('ok')
+        else:
+            print('connection to FC failed')
+    except Exception as e:
+        logger.error(f'{str(e)}')
+
+
+def get_freq_limit_high(ip_addr: str):
+    client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
+    success = client.connect()
+    try:
+        if success:
+            # read max_freq
+            resp = client.read_holding_registers(address=0x109, count=1, unit=1, slave=1)
+            max_freq = int(resp.registers[0]) / 100
+            resp = client.read_holding_registers(address=0x10a, count=1, unit=1, slave=1)
+            freq_limit_high = int(resp.registers[0]) / 100
+            print('ok')
+            print(min(max_freq, freq_limit_high))
+        else:
+            print('connection to FC failed')
+    except Exception as e:
+        logger.error(f'{str(e)}')
+
+
 def set_speed(ip_addr: str, speed):
     speed = int(speed)
     client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
@@ -163,8 +201,15 @@ def get_rpm_max(ip_addr: str):
             # read factory motor frequency
             resp = client.read_holding_registers(address=0x335, count=1, unit=1, slave=1)
             factory_motor_frequency = int(resp.registers[0])/100
+
+            # read max_freq
+            resp = client.read_holding_registers(address=0x109, count=1, unit=1, slave=1)
+            max_freq = int(resp.registers[0]) / 100
+            resp = client.read_holding_registers(address=0x10a, count=1, unit=1, slave=1)
+            limit_high = int(resp.registers[0]) / 100
+            freq_limit = min(max_freq, limit_high)
             # calculate max motor speed
-            max_speed = int((600*factory_motor_speed)/factory_motor_frequency)
+            max_speed = int((freq_limit*factory_motor_speed)/factory_motor_frequency)
             print('ok')
             print(max_speed)
         else:
