@@ -6,11 +6,11 @@ from loguru import logger
 from fc_driver import start_fc, stop_fc, get_state, set_freq, set_speed, set_motor_data, get_motor_data, \
     set_start_duration, set_stop_duration, get_start_duration, get_stop_duration, reset_to_default, debug_fc, \
     goto_hands_mode, goto_rs485_mode, get_rpm, alarm_reset, get_alarm_code, get_rpm_max, get_freq, start_fc_rev, \
-    set_freq_limit_high, get_freq_limit_high
+    set_freq_limit_high, get_freq_limit_high, get_freq_realtime
 
 commands = ['start', 'start_rev', 'stop',
            'get_state',
-           'set_freq', 'get_freq',
+           'set_freq', 'get_freq', 'get_freq_realtime',
            'set_freq_limit_high', 'get_freq_limit_high',
            'set_rpm', 'get_rpm', 'get_rpm_max',
            'set_motor_data', 'get_motor_data',
@@ -42,7 +42,9 @@ Possible cmd are:
                               
         get_freq_limit_high - get the maximum allowable frequency of inverter. Read parameters E9 and E10               
         
-        get_freq - read register value with address C02H
+        get_freq - read current bus reference frequency. Read register value with address 3000H
+        
+        get_freq_realtime - read actual output frequency. Read register value with address C02H
         
         set_rpm 1550 - set target speed of drive as 1550 rpm. This use set_freq command to set target 
                     speed of drive. Target frequency calculating by next expression:
@@ -55,9 +57,9 @@ Possible cmd are:
                         max_speed = (freq_limit_high*factory_motor_speed)/factory_motor_frequency
                         where freq_limit_high is the value from parameter E9 and E10
                          
-        set_motor_data 220 10.3 2.2 50 2800 - set motor data:   Voltage 220 Volts, H55, 
+        set_motor_data 220 10.3 2200 50 2800 - set motor data:   Voltage 220 Volts, H55, 
                                                                 Current 10.3 Ampere, H56, 
-                                                                Power 2.2 kW, H52,
+                                                                Power 2200 W, H52,
                                                                 Frequency 50 Hz, H53,
                                                                 Motor speed 2800 rpm, H54 
                                                             
@@ -140,6 +142,9 @@ def main():
     elif 'get_freq' in args.CMD:
         ip_addr = args.IP[0]
         get_freq(ip_addr=ip_addr)
+    elif 'get_freq_realtime' in args.CMD:
+        ip_addr = args.IP[0]
+        get_freq_realtime(ip_addr=ip_addr)
     elif 'set_freq_limit_high' in args.CMD:
         ip_addr = args.IP[0]
         if not args.CMD_ARGS:

@@ -25,11 +25,11 @@ ac70 192.168.3.198 get_state
 ```
 For set motor data use:
 ```commandline
-ac70 192.168.3.198 set_motor_data 220 5.4 2.2 50 1440
+ac70 192.168.3.198 set_motor_data 220 5.4 2200 50 1440
 ```
 Where: 
 * 220 - voltage in V 
  *   5.4 - current in A 
- *   2.2 - power in kW 
+ *   2200 - power in W 
  *   50 - frequency in Hz 
  *   1440 - speed in RPM 

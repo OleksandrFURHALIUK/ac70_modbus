@@ -97,6 +97,22 @@ def get_freq(ip_addr: str):
     try:
         if success:
             # read actual motor speed
+            resp = client.read_holding_registers(address=0x3000, count=1, unit=1, slave=1)
+            reference_motor_freq = int(resp.registers[0])/100
+            print('ok')
+            print(reference_motor_freq)
+        else:
+            print('connection to FC failed')
+    except Exception as e:
+        logger.error(f'{str(e)}')
+
+
+def get_freq_realtime(ip_addr: str):
+    client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
+    success = client.connect()
+    try:
+        if success:
+            # read actual motor speed
             resp = client.read_holding_registers(address=0xc02, count=1, unit=1, slave=1)
             actual_motor_freq = int(resp.registers[0])/100
             print('ok')
@@ -225,7 +241,7 @@ def set_motor_data(ip_addr: str, voltage, current, power, frequency, speed):
         if success:
             resp = client.write_register(address=0x337, value=int(voltage), slave=1)
             resp = client.write_register(address=0x338, value=int(float(current) * 10), slave=1)
-            resp = client.write_register(address=0x334, value=int(float(power) * 10), slave=1)
+            resp = client.write_register(address=0x334, value=int(float(power) / 100), slave=1)  # if power set in kW then use *10 if in W then /100
             resp = client.write_register(address=0x335, value=int(float(frequency) * 100), slave=1)
             resp = client.write_register(address=0x336, value=int(speed), slave=1)
             print('ok')
@@ -245,10 +261,10 @@ def get_motor_data(ip_addr: str):
             power = client.read_holding_registers(address=0x334, count=1, unit=1, slave=1)
             frequency = client.read_holding_registers(address=0x335, count=1, unit=1, slave=1)
             speed = client.read_holding_registers(address=0x336, count=1, unit=1, slave=1)
-            print('ok')
+            print('ok')  # if power get in kW then use /10 if in W then *100
             print(
-                f'voltage: {voltage.registers[0]} V\ncurrent: {current.registers[0] / 10} A\npower: {power.registers[0] / 10} kW\n'
-                f'frequency: {frequency.registers[0] / 100} Hz\nspeed: {speed.registers[0]} rpm')
+                f'vac: {voltage.registers[0]}\naac: {current.registers[0] / 10}\nwac: {power.registers[0] * 100}\n'
+                f'hz: {frequency.registers[0] / 100}\nrpm: {speed.registers[0]}')
         else:
             print('connection to FC failed')
     except Exception as e:
