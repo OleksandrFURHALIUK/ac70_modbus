@@ -4,7 +4,7 @@ import sys
 from loguru import logger
 
 from fc_driver import start_fc, stop_fc, get_state, set_freq, set_speed, set_motor_data, get_motor_data, \
-    set_start_duration, set_stop_duration, get_start_duration, get_stop_duration, reset_to_default, debug_fc, \
+    set_start_duration_to_limit, set_stop_duration_to_limit, get_start_duration_to_limit, get_stop_duration_to_limit, reset_to_default, debug_fc, \
     goto_hands_mode, goto_rs485_mode, get_rpm, alarm_reset, get_alarm_code, get_rpm_max, get_freq, start_fc_rev, \
     set_freq_limit_high, get_freq_limit_high, get_freq_realtime
 
@@ -14,8 +14,8 @@ commands = ['start', 'start_rev', 'stop',
            'set_freq_limit_high', 'get_freq_limit_high',
            'set_rpm', 'get_rpm', 'get_rpm_max',
            'set_motor_data', 'get_motor_data',
-           'set_start_duration', 'get_start_duration',
-           'set_stop_duration', 'get_stop_duration',
+           'set_start_duration_to_limit', 'get_start_duration_to_limit',
+           'set_stop_duration_to_limit', 'get_stop_duration_to_limit',
            'goto_hands_mode', 'goto_rs485_mode',
            'reset_to_default', 'alarm_reset', 'get_alarm_code',
             'debug'
@@ -62,16 +62,17 @@ Possible cmd are:
                                                                 Power 2200 W, H52,
                                                                 Frequency 50 Hz, H53,
                                                                 Motor speed 2800 rpm, H54 
+                                                                E15=1
                                                             
         get_motor_data - return motor data reading registers H55, H56, H52, H53, H54
         
-        set_start_duration 3.0 - set acceleration time 3 seconds by writing register with address 10DH
+        set_start_duration_to_limit 3.0 - set acceleration time 3 seconds by writing register with address 10DH
         
-        get_start_duration - read register with address 10DH
+        get_start_duration_to_limit - read register with address 10DH
         
-        set_stop_duration 3.0 - set deceleration time 3 seconds by writing register with address 10EH
+        set_stop_duration_to_limit 3.0 - set deceleration time 3 seconds by writing register with address 10EH
         
-        get_stop_duration - read register with address 10EH
+        get_stop_duration_to_limit - read register with address 10EH
         
         goto_hands_mode - switch control side to local control panel. Write registers:  0 -> 101H
                                                                                         1 -> 102H
@@ -186,24 +187,24 @@ def main():
     elif 'get_motor_data' in args.CMD:
         ip_addr = args.IP[0]
         get_motor_data(ip_addr=ip_addr)
-    elif 'set_start_duration' in args.CMD:
+    elif 'set_start_duration_to_limit' in args.CMD:
         ip_addr = args.IP[0]
         if not args.CMD_ARGS:
             print('not enough arguments')
             return
-        set_start_duration(ip_addr=ip_addr, duration=args.CMD_ARGS[0])
-    elif 'get_start_duration' in args.CMD:
+        set_start_duration_to_limit(ip_addr=ip_addr, duration=args.CMD_ARGS[0])
+    elif 'get_start_duration_to_limit' in args.CMD:
         ip_addr = args.IP[0]
-        get_start_duration(ip_addr=ip_addr)
-    elif 'set_stop_duration' in args.CMD:
+        get_start_duration_to_limit(ip_addr=ip_addr)
+    elif 'set_stop_duration_to_limit' in args.CMD:
         ip_addr = args.IP[0]
         if not args.CMD_ARGS:
             print('not enough arguments')
             return
-        set_stop_duration(ip_addr=ip_addr, duration=args.CMD_ARGS[0])
-    elif 'get_stop_duration' in args.CMD:
+        set_stop_duration_to_limit(ip_addr=ip_addr, duration=args.CMD_ARGS[0])
+    elif 'get_stop_duration_to_limit' in args.CMD:
         ip_addr = args.IP[0]
-        get_stop_duration(ip_addr=ip_addr)
+        get_stop_duration_to_limit(ip_addr=ip_addr)
     elif 'reset_to_default' in args.CMD:
         ip_addr = args.IP[0]
         reset_to_default(ip_addr=ip_addr)

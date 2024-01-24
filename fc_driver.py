@@ -276,7 +276,9 @@ def set_motor_data(ip_addr: str, voltage, current, power, frequency, speed):
             resp3 = client.write_register(address=0x334, value=int(float(power) / 100), slave=1)  # if power set in kW then use *10 if in W then /100
             resp4 = client.write_register(address=0x335, value=int(float(frequency) * 100), slave=1)
             resp5 = client.write_register(address=0x336, value=int(speed), slave=1)
-            if not resp1.isError() and not resp2.isError() and not resp3.isError() and not resp4.isError() and not resp5.isError():
+            resp6 = client.write_register(address=0x10f, value=1, slave=1)
+            if (not resp1.isError() and not resp2.isError() and not resp3.isError() and not resp4.isError()
+                    and not resp5.isError() and not resp6.isError()):
                 print('ok')
             else:
                 print('error during write parameter')
@@ -309,7 +311,7 @@ def get_motor_data(ip_addr: str):
         logger.error(f'{str(e)}')
 
 
-def set_start_duration(ip_addr: str, duration):
+def set_start_duration_to_limit(ip_addr: str, duration):
     client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
     success = client.connect()
     try:
@@ -325,7 +327,7 @@ def set_start_duration(ip_addr: str, duration):
         logger.error(f'{str(e)}')
 
 
-def get_start_duration(ip_addr: str):
+def get_start_duration_to_limit(ip_addr: str):
     client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
     success = client.connect()
     try:
@@ -343,7 +345,7 @@ def get_start_duration(ip_addr: str):
         logger.error(f'{str(e)}')
 
 
-def set_stop_duration(ip_addr: str, duration: str):
+def set_stop_duration_to_limit(ip_addr: str, duration: str):
     client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
     success = client.connect()
     try:
@@ -359,7 +361,7 @@ def set_stop_duration(ip_addr: str, duration: str):
         logger.error(f'{str(e)}')
 
 
-def get_stop_duration(ip_addr: str):
+def get_stop_duration_to_limit(ip_addr: str):
     client = ModbusTcpClient(ip_addr, port=9761, framer=ModbusRtuFramer)
     success = client.connect()
     try:
