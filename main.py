@@ -63,7 +63,7 @@ Possible cmd are:
                                                                 Power 2200 W, H52,
                                                                 Frequency 50 Hz, H53,
                                                                 Motor speed 2800 rpm, H54 
-                                                                E15=1
+                                                                E15 set bit 1 to True for accel./decel. mode to high freq limit
                                                             
         get_motor_data - return motor data reading registers H55, H56, H52, H53, H54
         
