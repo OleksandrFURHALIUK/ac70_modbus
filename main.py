@@ -35,7 +35,8 @@ Possible cmd are:
         stop - stop motor
         
         set_freq 12.3 - set frequency, by writing value in to register with address 3000H.
-                        during writing check input value in range 0-600 Hz 
+                        during writing check input value in range 0-600 Hz. 
+                        If freq > freq_limit_high then reference frequency equal to freq_limit_high
         
         set_freq_limit_high - set the maximum allowable output frequency of inverter. 
                               Write E9 and E10 parameters.

@@ -276,10 +276,18 @@ def set_motor_data(ip_addr: str, voltage, current, power, frequency, speed):
             resp3 = client.write_register(address=0x334, value=int(float(power) / 100), slave=1)  # if power set in kW then use *10 if in W then /100
             resp4 = client.write_register(address=0x335, value=int(float(frequency) * 100), slave=1)
             resp5 = client.write_register(address=0x336, value=int(speed), slave=1)
-            resp6 = client.write_register(address=0x10f, value=1, slave=1)
-            if (not resp1.isError() and not resp2.isError() and not resp3.isError() and not resp4.isError()
-                    and not resp5.isError() and not resp6.isError()):
-                print('ok')
+
+            # reading E15 parameter and write back
+            resp6 = client.read_holding_registers(address=0x10f, count=1, unit=1, slave=1)
+            if not resp6.isError():
+                value = resp6.registers[0]
+                value = value | (1 << 1)  # set bit with number 1 0b00000010
+                resp7 = client.write_register(address=0x10f, value=value, slave=1)
+                if (not resp1.isError() and not resp2.isError() and not resp3.isError() and not resp4.isError()
+                        and not resp5.isError() and not resp6.isError() and not resp7.isError()):
+                    print('ok')
+                else:
+                    print('error during write parameter')
             else:
                 print('error during write parameter')
         else:
